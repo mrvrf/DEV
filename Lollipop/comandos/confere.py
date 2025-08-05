@@ -21,6 +21,7 @@ class Confere(commands.Cog):
         )
         log_embed.set_footer(text=f"Executado por {interaction.user.display_name}", icon_url=interaction.user.avatar.url)
         print(f"Confere iniciado por {interaction.user.display_name}")
+        print(f"Confere = {mensagem}")
 
         # Envia o log para um canal específico
         log_channel = interaction.guild.get_channel(1318401148151009391)
@@ -66,7 +67,7 @@ class Confere(commands.Cog):
                     await interaction.followup.send(f":x: Falha ao liberar participar para {member.display_name}", ephemeral=True)
                 
                 # Aguarda 1 segundo entre as mensagens
-                await asyncio.sleep(2.5)
+                await asyncio.sleep(2.0)
 
         successful_members.sort()
         failed_members.sort()
@@ -102,16 +103,12 @@ class Confere(commands.Cog):
             print(f'Error in teste command: {error}')
 
 async def setup(bot):
-    print("Setting up Confere cog...")
     cog = Confere(bot)
     await bot.add_cog(cog)
-    print("Confere cog added.")
 
     # Define permissões padrão para comandos
     command = bot.tree.get_command("confere")
     if command:
         command.default_permissions = discord.Permissions(administrator=True)
-        print("Confere command permissions set.")
 
     await bot.tree.sync()
-    print("Commands synced globally.")

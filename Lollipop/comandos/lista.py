@@ -10,7 +10,7 @@ class Lista(commands.Cog):
 
     @app_commands.command(name='lista', description='Lista membros do canal de voz especificado')
     @app_commands.guild_only()
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.checks.has_role(1326000068448489502)
     @app_commands.describe(canal_voz='O canal de voz para listar os membros', nome_lista='Nome da lista')
     async def list_members(self, interaction: discord.Interaction, canal_voz: discord.VoiceChannel, nome_lista: str):
         await interaction.response.defer(ephemeral=True)
@@ -73,4 +73,3 @@ async def setup(bot):
         command.default_permissions = discord.Permissions(administrator=True)
 
     await bot.tree.sync(guild=guild)
-    print("Comandos lista.py registrados.")

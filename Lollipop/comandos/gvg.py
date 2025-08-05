@@ -10,14 +10,19 @@ class PVP(commands.Cog):
 
     @app_commands.command(name="pvp", description="Inicia um pvp.")
     @app_commands.guild_only()
-    @app_commands.describe(cargo="Cargo para enviar a gvg", mensagem="Mensagem a ser enviada", tipo="Tipo de PvP", quantidade="Quantidade de pings nos canais")
+    @app_commands.describe(cargo="Cargo para enviar a gvg", mensagem="Mensagem a ser enviada", tipo="Tipo de PvP", prioridade="Quantos canais pra receber ping com base na prioridade", quantidade="Quantidade de pings nos canais")
     @app_commands.checks.has_role(1325386396214628454)
     @app_commands.choices(tipo=[
         app_commands.Choice(name="Normal", value="Normal"),
         app_commands.Choice(name="Obrigatória", value="Obrigatoria"),
         app_commands.Choice(name="PvP", value="PvP")
     ])
-    async def aviso(self, interaction: discord.Interaction, cargo: discord.Role, mensagem: str, tipo: app_commands.Choice[str], quantidade: int):
+    @app_commands.choices(prioridade=[
+        app_commands.Choice(name="Baixa", value="Baixa"),
+        app_commands.Choice(name="Media", value="Media"),
+        app_commands.Choice(name="Alta", value="Alta")
+    ])
+    async def aviso(self, interaction: discord.Interaction, cargo: discord.Role, mensagem: str, tipo: app_commands.Choice[str], prioridade: app_commands.Choice[str], quantidade: int):
         guild = interaction.guild
 
         if tipo.value == "Normal":
@@ -70,9 +75,9 @@ class PVP(commands.Cog):
                 embed = discord.Embed(title=f"{tipotitulo}", description=f"**{mensagem}**\n", color=tipocor)
                 current_time = datetime.now().strftime("%H:%M")
                 if member.avatar:
-                    embed.set_footer(text=f"Ping PvP recebido por: {member.display_name} às {current_time}", icon_url=member.avatar.url)
+                    embed.set_footer(text=f"GvG recebido por: {member.display_name} às {current_time}", icon_url=member.avatar.url)
                 else:
-                    embed.set_footer(text=f"Ping PvP recebido por: {member.display_name} às {current_time}")
+                    embed.set_footer(text=f"GvG recebido por: {member.display_name} às {current_time}")
                 
                 try:
                     await member.send(embed=embed)
@@ -98,7 +103,7 @@ class PVP(commands.Cog):
 
         if len(successful_members) % 20 != 0 and successful_members:
             log_embed = discord.Embed(
-                title="**Notificação do PvP**",
+                title="**Notificação do GvG**",
                 description=f"{len(successful_members)} membros notificados.",
                 color=0xFFFF00
             )
@@ -109,7 +114,7 @@ class PVP(commands.Cog):
             await log_channel.send(embed=log_embed)
 
         final_embed = discord.Embed(
-            title=f"**Resultado do Ping PvP - {tipotitulo}**",
+            title=f"**Resultado do Ping GvG - {tipotitulo}**",
             description=f"Total de membros processados: {len(successful_members) + len(failed_members)}",
             color=0x00FF00 if not failed_members else 0xFF0000
         )

@@ -129,4 +129,4 @@ class Teste(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Teste(bot))
-    await bot.add_cog(Wip(bot))
+    #await bot.add_cog(Wip(bot))

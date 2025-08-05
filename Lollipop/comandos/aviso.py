@@ -67,13 +67,13 @@ class Aviso(commands.Cog):
         if tipo.value == "Obrigatoria":
             aviso_sala1 = interaction.guild.get_channel(929466094077509662) #avisos
             aviso_sala2 = interaction.guild.get_channel(946208313123667968) #ping-pvp
-            await aviso_sala1.send(f"{cargo.mention} {mensagem}")
+            await aviso_sala1.send(f"# {cargo.mention} {mensagem}")
             await asyncio.sleep(1)
-            await aviso_sala2.send(f"<@&929480758328975381> <@&929344073221935104> <@&935733958266716200> <@&1206381250064158740> {mensagem}")
+            await aviso_sala2.send(f"# <@&929480758328975381> <@&929344073221935104> <@&935733958266716200> <@&1206381250064158740> {mensagem}")
             await asyncio.sleep(1)
-            await aviso_sala2.send(f"<@&929480758328975381> <@&929344073221935104> <@&935733958266716200> <@&1206381250064158740> {mensagem}")
+            await aviso_sala2.send(f"# <@&929480758328975381> <@&929344073221935104> <@&935733958266716200> <@&1206381250064158740> {mensagem}")
             await asyncio.sleep(1)
-            await aviso_sala2.send(f"<@&929480758328975381> <@&929344073221935104> <@&935733958266716200> <@&1206381250064158740> {mensagem}")
+            await aviso_sala2.send(f"# <@&929480758328975381> <@&929344073221935104> <@&935733958266716200> <@&1206381250064158740> {mensagem}")
             await asyncio.sleep(1)
         else:
             await asyncio.sleep(1)
@@ -140,28 +140,9 @@ class Aviso(commands.Cog):
 
         log_channel = self.bot.get_channel(1318400984531210281)
         await log_channel.send(embed=final_embed)
+        await interaction.user.send(embed=final_embed)
 
-        # Embed de log sobre quem recebeu a mensagem
-    #    success_embed = discord.Embed(
-    #        title="**Envio do Aviso**",
-    #        color=0xFFFF00 if successful_members else 0xFF0000
-    #    )
-    #    if successful_members:
-    #        success_embed.add_field(name="Membros notificados :white_check_mark:", value="\n".join(successful_members), inline=False)
-    #    else:
-    #        success_embed.add_field(name="Nenhum membro foi notificado", value="N/A", inline=False)
-    #
-    #    if failed_members:
-    #        success_embed.add_field(name="Membros com erro :cross_mark:", value="\n".join(failed_members), inline=False)
-
-        # Send the follow-up message
-    #   await interaction.followup.send(embed=success_embed, ephemeral=True)
-
-        
-
-        # Send the summary to a specific channel
-    #    summary_channel = interaction.guild.get_channel(1318400984531210281)
-    #    await summary_channel.send(embed=success_embed)
+        await interaction.followup.send(embed=final_embed, ephemeral=True)
 
     @aviso.error
     async def aviso_error(self, interaction: discord.Interaction, error):
@@ -172,4 +153,3 @@ class Aviso(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Aviso(bot))
-    print("Aviso cog added to bot.")
