@@ -136,7 +136,7 @@ class BotLog(commands.Cog):
                     timestamp=datetime.now()
                 )
                 embed.set_author(name="Cargo Adicionado", icon_url=after.avatar.url if after.avatar else after.default_avatar.url)
-                embed.set_footer(text=f"{after.id} - {after.name}")
+                embed.set_footer(text=f"ID: {after.id} - {after.name}")
                 await log_channel.send(embed=embed)
 
             # Handle removed roles
@@ -148,7 +148,7 @@ class BotLog(commands.Cog):
                     timestamp=datetime.now()
                 )
                 embed.set_author(name="Cargo Removido", icon_url=after.avatar.url if after.avatar else after.default_avatar.url)
-                embed.set_footer(text=f"{after.id} - {after.name}")
+                embed.set_footer(text=f"ID: {after.id} - {after.name}")
                 await log_channel.send(embed=embed)
 
         except Exception as e:

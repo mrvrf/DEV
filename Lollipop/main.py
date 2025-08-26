@@ -28,22 +28,26 @@ class MyBot(commands.Bot):
             #'comandos.ajuda',
             'comandos.teste',
             #'comandos.alert',
-            'comandos.pmensagem',
-            #'comandos.limpa',
+        #    'comandos.pmensagem',
+            'comandos.limpa',
             #'comandos.embedT',
             #'comandos.mover',
             #'comandos.gvg',
             #'comandos.guild_profile',
-            'comandos.vodreview',
+        #    'comandos.vodreview',
             #'comandos.alone',
             #'comandos.online',
             #'comandos.presenca',
-            'comandos.control',
-            'comandos.self',
+        #    'comandos.control',
+        #    'comandos.self',
             #'comandos.cobrar',
             #'comandos.check_confere',
             'comandos.bot_log',
-            'comandos.recruit'
+            'comandos.recruit',
+        #    'comandos.rrrecruits',
+            'comandos.att_name',
+            'comandos.estatistica',
+            'comandos.api',
             #'comandos.teste_presenca'
         ]
         self.role_id = 1361472124199637102 # ID do cargo que contém os jogadores
@@ -102,8 +106,8 @@ class MyBot(commands.Bot):
         await self.wait_until_ready()
 
 intents = discord.Intents.default()
-intents.members = True  # Ensure the bot has the members intent
-intents.voice_states = True  # Ensure the bot has the voice states intent
+intents.members = True 
+intents.voice_states = True
 
 bot = MyBot(command_prefix="!", intents=intents)
 

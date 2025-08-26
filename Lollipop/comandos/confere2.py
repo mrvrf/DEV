@@ -42,6 +42,7 @@ class Ccconfere(commands.Cog):
         pending_approval = []
         disapproved_members = []  # New list for disapproved members
 
+
         # Defer the response to avoid timeout
         await interaction.response.defer(ephemeral=True)
 
@@ -60,12 +61,30 @@ class Ccconfere(commands.Cog):
             )
             embed_message.set_footer(text=f"Participar liberado para: {member.display_name}", icon_url=member.avatar.url if member.avatar else None)
             if member and not member.bot:  # Ignora bots
-                specific_role = discord.utils.get(member.roles, id=1388632745248428132)  # Replace with your role ID
+                rigidez_ids = [1375252320799166464, 1375252225512702034, 1375251715519152238]
+                member_role = None
+                #specific_role = any(discord.utils.get(member.roles, id=rigidez_id) for rigidez_id in rigidez_ids)  # Replace with your role ID
 
-                if specific_role:
+                for rigidez_id in rigidez_ids:
+                    role = discord.utils.get(member.roles, id=rigidez_id)
+                    if role:
+                        member_role = role
+                        break
+
+                if member_role:
                     pending_approval.append(member)
+                    approval_embed = discord.Embed(
+                        title="Aprovação Necessária",
+                        description=f"O membro {member.mention} possui o cargo **{member_role.name}**.\nDeseja liberar o participar?",
+                        color=0xFF0000
+                    )
                 else:
                     try:
+
+                #if specific_role:
+                #    pending_approval.append(member)
+                #else:
+                #    try:
                         await member.send(embed=embed_message)
                         successful_members.append(member.display_name)
                         print(f'(Confere) Mensagem enviada para {member.display_name}')
@@ -80,7 +99,7 @@ class Ccconfere(commands.Cog):
             for member in pending_approval:
                 approval_embed = discord.Embed(
                     title="Aprovação Necessária",
-                    description=f"O membro {member.mention} possui o cargo.\nDeseja enviar a mensagem?",
+                    description=f"O membro {member.mention} possui o cargo **{member_role.name}**.\nDeseja liberar o participar?",
                     color=0xFF0000
                 )
 
