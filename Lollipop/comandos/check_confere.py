@@ -13,7 +13,6 @@ class CConfere(commands.Cog):
     @app_commands.describe(mensagem="Mensagem a ser enviada", membros="Membros liberados")
     @app_commands.checks.has_role(1325386396214628454)
     async def confere(self, interaction: discord.Interaction, mensagem: str, membros: str):
-        # Cria embed para logar o uso do comando
         log_embed = discord.Embed(
             title="**Comando Executado**",
             description=f"**Comando:** */confere*\n**Hora:** {datetime.now().strftime('%d/%m/%Y | %H:%M')}",
@@ -22,7 +21,6 @@ class CConfere(commands.Cog):
         log_embed.set_footer(text=f"Executado por {interaction.user.display_name}", icon_url=interaction.user.avatar.url)
         print(f"Confere iniciado por {interaction.user.display_name}")
 
-        # Envia o log para um canal específico
         log_channel = interaction.guild.get_channel(1318401148151009391)
         await log_channel.send(embed=log_embed)
 
@@ -40,10 +38,8 @@ class CConfere(commands.Cog):
         failed_members = []
         pending_approval = []
 
-        # Defer the response to avoid timeout
         await interaction.response.defer(ephemeral=True)
 
-        # Process members based on role
         for user_id in mention_ids:
             member = interaction.guild.get_member(user_id)
             if member and not member.bot:
@@ -51,10 +47,8 @@ class CConfere(commands.Cog):
                 specific_role = discord.utils.get(interaction.guild.roles, id=specific_role_id)
 
                 if specific_role in member.roles:
-                    # Add to pending approval list
                     pending_approval.append(member)
                 else:
-                    # Send DM automatically for members without role
                     try:
                         dm_embed = discord.Embed(
                             title="Mensagem Privada",
@@ -66,7 +60,6 @@ class CConfere(commands.Cog):
                     except discord.Forbidden:
                         failed_members.append(member)
 
-        # Process members that need approval
         if pending_approval:
             approval_embed = discord.Embed(
                 title="Aprovação Necessária",
@@ -108,7 +101,6 @@ class CConfere(commands.Cog):
                     except discord.Forbidden:
                         failed_members.append(member)
 
-        # Send a summary of the operation
         summary_message = f"**Resumo:**\n"
         if successful_members:
             summary_message += f"Mensagens enviadas para: {', '.join([m.mention for m in successful_members])}\n"

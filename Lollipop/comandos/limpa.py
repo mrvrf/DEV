@@ -14,15 +14,12 @@ class Limpa(commands.Cog):
     async def limparole(self, interaction: discord.Interaction, role: discord.Role):
 
         await interaction.response.defer(ephemeral=True)
-        # Check if the command is being executed in a guild
         if interaction.guild is None:
             await interaction.response.send_message("Este comando não pode ser usado em mensagens privadas.", ephemeral=True)
             return
 
-        # Get the list of members with the specified role
         members_with_role = [member for member in interaction.guild.members if role in member.roles]
 
-        # Remove the role from each member with a cooldown
         for member in members_with_role:
             try:
                 await member.remove_roles(role)

@@ -14,33 +14,25 @@ class BotLog(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member):
 
-        # Define colors
         verde = self.embed_color_verde
 
         try:
-            # Get the log channel
             log_channel = self.bot.get_channel(self.log_channel_id)
             if not log_channel:
                 print(f"Log channel not found: {self.log_channel_id}")
                 return
 
-            # Create embed
             embed = discord.Embed(
                 title="Usuário entrou no servidor",
                 description=f"{member.mention} entrou no servidor!",
                 color=verde,
                 timestamp=datetime.now()
             )
-            
-            # Add member info
             embed.add_field(name="Nome", value=member.name, inline=True)
             embed.add_field(name="ID", value=member.id, inline=True)
             embed.add_field(name="Conta Criada", value=member.created_at.strftime("%d/%m/%Y"), inline=False)
-            
-            # Set thumbnail to member avatar
             embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
             
-            # Send embed
             await log_channel.send(embed=embed)
             
         except Exception as e:
@@ -49,33 +41,25 @@ class BotLog(commands.Cog):
     @commands.Cog.listener()
     async def on_member_remove(self, member):
 
-        # Define colors
         vermelho = self.embed_color_vermelho
 
         try:
-            # Get the log channel
             log_channel = self.bot.get_channel(self.log_channel_id)
             if not log_channel:
-                print(f"Log channel not found: {self.log_channel_id}")
+                print(f"Canal de log não encontrado: {self.log_channel_id}")
                 return
 
-            # Create embed
             embed = discord.Embed(
                 title="Usuário saiu do servidor",
                 description=f"{member.mention} saiu do servidor!",
                 color=vermelho,
                 timestamp=datetime.now()
             )
-            
-            # Add member info
             embed.add_field(name="Nome", value=member.name, inline=True)
             embed.add_field(name="ID", value=member.id, inline=True)
             embed.add_field(name="Entrou em", value=member.joined_at.strftime("%d/%m/%Y"), inline=False)
-            
-            # Set thumbnail to member avatar
             embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
             
-            # Send embed
             await log_channel.send(embed=embed)
             
         except Exception as e:
@@ -83,17 +67,14 @@ class BotLog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_ban(self, guild, user):
-        # Define colors
         preto = self.embed_color_preto
 
         try:
-            # Get the log channel
             log_channel = self.bot.get_channel(self.log_channel_id)
             if not log_channel:
-                print(f"Log channel not found: {self.log_channel_id}")
+                print(f"Canal de log não encontrado: {self.log_channel_id}")
                 return
 
-            # Create embed
             embed = discord.Embed(
                 title="Usuário banido do servidor",
                 description=f"{user.mention} foi banido do servidor!",
@@ -101,14 +82,10 @@ class BotLog(commands.Cog):
                 timestamp=datetime.now()
             )
             
-            # Add user info
             embed.add_field(name="Nome", value=user.name, inline=True)
             embed.add_field(name="ID", value=user.id, inline=True)
-            
-            # Set thumbnail to user avatar
             embed.set_thumbnail(url=user.avatar.url if user.avatar else user.default_avatar.url)
             
-            # Send embed
             await log_channel.send(embed=embed)
             
         except Exception as e:
@@ -120,14 +97,12 @@ class BotLog(commands.Cog):
             log_channel = self.bot.get_channel(self.log_channel_id)
             if not log_channel:
                 return
-
-            # Check for role changes
+            
             added_roles = [role for role in after.roles if role not in before.roles]
             removed_roles = [role for role in before.roles if role not in after.roles]
 
             rosa = self.embed_color_rosa
 
-            # Handle added roles
             for role in added_roles:
                 embed = discord.Embed(
                     title="",
@@ -139,7 +114,6 @@ class BotLog(commands.Cog):
                 embed.set_footer(text=f"ID: {after.id} - {after.name}")
                 await log_channel.send(embed=embed)
 
-            # Handle removed roles
             for role in removed_roles:
                 embed = discord.Embed(
                     title="",

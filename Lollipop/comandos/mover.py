@@ -48,7 +48,6 @@ class Mover(commands.Cog):
                 await interaction.response.send_message(f"Erro ao mover {member.display_name}: {e}", ephemeral=True)
                 return
 
-        # Create an embed to log the moved members
         embed = discord.Embed(
             title=f"Resultado do Mover",
             description=f"{len(moved_members)} membros movidos",
@@ -59,7 +58,6 @@ class Mover(commands.Cog):
         embed.add_field(name="Canal de destino", value=canal_destino.mention, inline=False)
         embed.set_footer(text=f"Movido por {interaction.user.display_name} - {current_time}", icon_url=interaction.user.avatar.url)
 
-        # Send the embed to the interaction channel
         log_botmerizinha = self.bot.get_channel(1318400984531210281)
         await log_botmerizinha.send(embed=embed)
         await interaction.followup.send(f"{len(moved_members)} membros movidos do canal {canal_origem} para o canal {canal_destino}", ephemeral=True)

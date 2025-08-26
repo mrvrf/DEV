@@ -14,8 +14,18 @@ GUILD_ROLE_IDS = {
     "manifest": 1206381250064158740
 }
 
+raids_ids = {
+    "elefanteiro": 942684778510045205,
+    "flanco": 978853483782492180,
+    "bandeira": 1244387844961603766,
+    "raid_1": 1210354501870166077,
+    "raid_2": 1210354582048473088,
+    "raid_3": 1210354616840093796,
+    "raid_4": 1210354659378860083,
+    "defesa": 959267503475949578
+}
+
 classes = {
-    # Full names
     "Arqueiro": "Arqueiro", "Berserker": "Berserker", "Corsaria": "Corsaria",
     "Cavaleira das Trevas": "Cavaleira das Trevas", "Drakania": "Drakania",
     "Guardian": "Guardian", "Hashashin": "Hashashin",
@@ -39,7 +49,6 @@ def fetch_profiles():
     """)
     rows = cursor.fetchall()
     conn.close()
-    # Map Discord ID (string) to profile data
     return {str(user_id): (family_name, ap, aap, dp, main_class) for user_id, family_name, ap, aap, dp, main_class in rows}
 
 class Stats(commands.Cog):
@@ -68,7 +77,7 @@ class Stats(commands.Cog):
         log_channel = interaction.guild.get_channel(1318401148151009391)
         await log_channel.send(embed=log_embed)
 
-        await interaction.response.defer()  # in case it takes a moment
+        await interaction.response.defer()
 
         if guild_name.value == "geral":
 
@@ -87,7 +96,9 @@ class Stats(commands.Cog):
 
             for member in members_in_role:
                 family_name, ap, aap, dp, main_class = profiles[str(member.id)]
-                gs = ((ap + aap) / 2) + dp
+                max_ap = max(ap, aap)
+                gs = max_ap + dp
+                #gs = ((ap + aap) / 2) + dp
                 all_members.append({"family_name": family_name, "gs": gs, "main_class": main_class})
 
                 if main_class not in class_stats:
@@ -103,23 +114,24 @@ class Stats(commands.Cog):
                 class_averages.append({"class_name": class_name, "avg_gs": avg_gs})
             class_averages.sort(key=lambda x: x["avg_gs"], reverse=True)
 
-            members_embed = discord.Embed(
-                title="Membros (Geral)",
-                color=discord.Color.gold(),
-                timestamp=datetime.now()
-            )
-
-            members_list = []
-            for i, member in enumerate(all_members, 1):
-                members_list.append(f"**{i}.** {member['family_name']} ({member['main_class']}) - {int(member['gs'])}gs")
-
-            for i in range(0, len(members_list), 50):
-                chunk = members_list[i:i+50]
-                members_embed.add_field(
-                    name=f"Membros {i+1}-{i+len(chunk)}" if i > 0 else "Membros",
-                    value="\n".join(chunk),
-                    inline=False
+            member_embeds = []
+            chunk_size = 30
+            for chunk_index in range(0, len(all_members), chunk_size):
+                chunk = all_members[chunk_index:chunk_index + chunk_size]
+                
+                embed = discord.Embed(
+                    title=f"Membros (Geral) - Parte {chunk_index//chunk_size + 1}",
+                    color=discord.Color.gold(),
+                    timestamp=datetime.now()
                 )
+                
+                members_list = []
+                for i, member in enumerate(chunk, chunk_index + 1):
+                    members_list.append(f"**{i}.** {member['family_name']} ({member['main_class']}) - {int(member['gs'])}gs")
+                
+                embed.description = "\n".join(members_list)
+                member_embeds.append(embed)
+
             classes_embed = discord.Embed(
                 title="Estatísticas por Classe",
                 color=discord.Color.blue(),
@@ -135,7 +147,13 @@ class Stats(commands.Cog):
             
             classes_embed.description = "\n".join(classes_list)
 
-            await interaction.followup.send(embeds=[members_embed, classes_embed], ephemeral=True)
+            all_embeds = member_embeds + [classes_embed]
+            await interaction.followup.send(embeds=all_embeds[:10], ephemeral=True)  
+
+            if len(all_embeds) > 10:
+                for i in range(10, len(all_embeds), 10):
+                    chunk = all_embeds[i:i+10]
+                    await interaction.followup.send(embeds=chunk, ephemeral=True)
             return
 
         role_id = GUILD_ROLE_IDS[guild_name.value]
@@ -151,10 +169,11 @@ class Stats(commands.Cog):
         stats_list = []
         for member in members_in_role:
             family_name, ap, aap, dp, main_class = profiles[str(member.id)]
-            gs = ((ap + aap) / 2) + dp
+            max_ap = max(ap, aap)
+            gs = max_ap + dp
+        #    gs = ((ap + aap) / 2) + dp
             stats_list.append({"family_name": family_name, "gs": gs, "main_class": main_class})
 
-        # Sort by GS
         stats_list.sort(key=lambda x: x["gs"], reverse=True)
 
         median_gs = statistics.median([s["gs"] for s in stats_list])
@@ -192,11 +211,93 @@ class Stats(commands.Cog):
         ]
         embed.add_field(name="⚔️ Top 5 Classes", value="\n".join(top5_lines), inline=True)
         if guild_name.value == "lollipop":
+            # Calculate raid averages
+            raid_stats = {}
+            for raid_name, raid_id in raids_ids.items():
+                raid_role = interaction.guild.get_role(raid_id)
+                if raid_role:
+                    raid_members = [m for m in raid_role.members if str(m.id) in profiles]
+                    if raid_members:
+                        raid_gs = []
+                        for member in raid_members:
+                            family_name, ap, aap, dp, main_class = profiles[str(member.id)]
+                            max_ap = max(ap, aap)
+                            gs = max_ap + dp
+                        #    gs = ((ap + aap) / 2) + dp
+                            raid_gs.append(gs)
+                        raid_stats[raid_name] = int(sum(raid_gs) / len(raid_gs))
+                    else:
+                        raid_stats[raid_name] = 0
+            
+            excluded_role_ids = [1079803777462308997, 959267503475949578, 1237892599357116436]
+
+            filtered_stats = []
+            for member in members_in_role:
+                has_excluded_role = any(discord.utils.get(member.roles, id=role_id)
+                                        for role_id in excluded_role_ids)
+                
+                if not has_excluded_role:
+                    family_name, ap, aap, dp, main_class = profiles[str(member.id)]
+                    max_ap = max(ap, aap)
+                    gs = max_ap + dp
+                    filtered_stats.append(gs)
+
+            if filtered_stats:
+                special_avg = int(sum(filtered_stats) / len(filtered_stats))
+                embed.add_field(
+                    name="⚔️ GS Médio (Filtro)",
+                    value=f"{special_avg} gs - {len(filtered_stats)} membros",
+                    inline=False
+                )
+            else:
+                embed.add_field(
+                    name="⚔️ GS Médio (Filtro)",
+                    value="Sem membros",
+                    inline=False
+                )
+
+            embed.add_field(name="\u200b", value="\u200b", inline=False)  # Spacer
+            embed.add_field(name="📊 Média por Raid", value="", inline=False)
+            
+            for raid_name, avg_gs in raid_stats.items():
+                formatted_name = raid_name.replace('_', ' ').title()
+                embed.add_field(
+                    name=f"⚔️ {formatted_name}",
+                    value=f"{avg_gs}gs" if avg_gs > 0 else "Sem membros",
+                    inline=True
+                )
+
+            no_raid_gs = []
+            for member in members_in_role:
+                has_raid = False
+                for raid_id in raids_ids.values():
+                    if discord.utils.get(member.roles, id=raid_id):
+                        has_raid = True
+                        break
+                if not has_raid:
+                    family_name, ap, aap, dp, main_class = profiles[str(member.id)]
+                    max_ap = max(ap, aap)
+                    gs = max_ap + dp
+                #    gs = ((ap + aap) / 2) + dp
+                    no_raid_gs.append(gs)
+
+            if no_raid_gs:
+                avg_no_raid = int(sum(no_raid_gs) / len(no_raid_gs))
+                embed.add_field(
+                    name="⚔️ Sem Raid",
+                    value=f"{avg_no_raid}gs",
+                    inline=True
+                )
+            else:
+                embed.add_field(
+                    name="⚔️ Sem Raid",
+                    value="Sem membros",
+                    inline=True
+                )
+        if guild_name.value == "lollipop":
             embed.set_thumbnail(url=interaction.guild.icon.url if interaction.guild.icon else None)
 
-
         await interaction.followup.send(embed=embed, ephemeral=True)
-
 
 async def setup(bot):
     await bot.add_cog(Stats(bot))

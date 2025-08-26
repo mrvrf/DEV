@@ -13,7 +13,7 @@ class Confere(commands.Cog):
     @app_commands.describe(mensagem="Mensagem a ser enviada", membros="Membros liberados")
     @app_commands.checks.has_role(1325386396214628454)
     async def confere(self, interaction: discord.Interaction, mensagem: str, membros: str):
-        # Cria embed para logar o uso do comando
+        # Cria embed para log de uso do comando
         log_embed = discord.Embed(
             title="**Comando Executado**",
             description=f"**Comando:** */confere*\n**Hora:** {datetime.now().strftime('%d/%m/%Y | %H:%M')}",
@@ -43,7 +43,6 @@ class Confere(commands.Cog):
         successful_members = []
         failed_members = []
 
-        # Defer the response to avoid timeout
         await interaction.response.defer(ephemeral=True)
 
         # Envia mensagens privadas para todos os membros mencionados
@@ -66,13 +65,13 @@ class Confere(commands.Cog):
                     print(f'(Confere) Falha ao enviar mensagem para {member.display_name}: {e}')
                     await interaction.followup.send(f":x: Falha ao liberar participar para {member.display_name}", ephemeral=True)
                 
-                # Aguarda 1 segundo entre as mensagens
+                # cd 2seg
                 await asyncio.sleep(2.0)
 
         successful_members.sort()
         failed_members.sort()
 
-        # Cria embed com o resumo do envio das mensagens
+        # Resumo
         embed = discord.Embed(
             title="**Resultado do Confere**",
             description=f"**Confere enviado por:** {interaction.user.display_name}",
@@ -88,10 +87,8 @@ class Confere(commands.Cog):
 
         await interaction.followup.send(f":white_check_mark: **Confere** finalizado!", ephemeral=True)
         
-        # Envia a resposta do comando
         await interaction.followup.send(embed=embed, ephemeral=True)
-
-        # Envia o resumo do envio das mensagens para um canal específico
+        
         summary_channel = interaction.guild.get_channel(1119767862383476797)
         await summary_channel.send(embed=embed)
 

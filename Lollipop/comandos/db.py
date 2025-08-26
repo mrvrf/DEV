@@ -36,7 +36,6 @@ async def upsert_player(user_id: str, name: str, display_name: str):
 
 async def update_gvg_presence(role_members, voice_channel_members, column_name: str):
     async with aiosqlite.connect(DATABASE_GVG) as db:
-        # Check if the column exists
         async with db.execute("PRAGMA table_info(gvg)") as cursor:
             columns = [column[1] for column in await cursor.fetchall()]
             if column_name not in columns:

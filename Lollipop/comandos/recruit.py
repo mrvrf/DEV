@@ -67,11 +67,9 @@ class Recruit(commands.Cog):
     
     async def get_raids(self, member):
         try:
-            # Get member's actual roles
             print(f"{datetime.now()} | Verificando cargos para usuario: {member.display_name}")
             member_role_ids = [role.id for role in member.roles]
             
-            # Check if member has any raid roles
             for role_id, raid_name in self.raids.items():
                 if role_id in member_role_ids:
                     print(f"Encontrado cargo: {raid_name} para o membro {member.display_name}")
@@ -82,6 +80,38 @@ class Recruit(commands.Cog):
             
         except Exception as e:
             print(f"Error in get_raids: {e}")
+            return None
+        
+    async def get_gs_ranking(self, user_id):
+        try:
+            with sqlite3.connect('profiles.db') as conn:
+                c = conn.cursor()
+                guild = self.bot.get_guild(929343217915297812)  # ID do servidor
+                registered_role_id = 1395196503261446146  # ID do cargo Registrado
+                role = guild.get_role(registered_role_id)
+
+                member_ids = [member.id for member in role.members]
+                placeholders = ','.join('?' * len(member_ids))
+
+                c.execute(f'''
+                    SELECT user_id, 
+                          (CASE
+                                 WHEN ap > aap THEN ap
+                                 ELSE aap
+                            END + dp) AS gs
+                    FROM profiles
+                    WHERE user_id IN ({placeholders})
+                    ORDER BY gs DESC
+                ''', member_ids)
+
+                rankings = c.fetchall()
+
+                for position, (ranked_user_id, _) in enumerate(rankings, 1):
+                    if ranked_user_id == user_id:
+                        return position
+                return None
+        except Exception as e:
+            print(f"Error calculating get_gs_ranking: {e}")
             return None
         
     async def get_lollipop_average(self):
@@ -96,7 +126,11 @@ class Recruit(commands.Cog):
                 placeholders = ','.join('?' * len(member_ids))
 
                 c.execute(f'''
-                    SELECT AVG((ap+aap) / 2 + dp) as avg_gs
+                    SELECT AVG(
+                          CASE
+                            WHEN ap > aap THEN ap
+                            ELSE aap
+                          END + dp) AS avg_gs
                     FROM profiles
                     WHERE user_id IN ({placeholders})
                 ''', member_ids)
@@ -131,7 +165,11 @@ class Recruit(commands.Cog):
                 
                 placeholders = ','.join('?' * len(guild_members))
                 c.execute(f'''
-                    SELECT AVG((ap+aap) / 2 + dp) as avg_gs
+                    SELECT AVG(
+                          CASE
+                            WHEN ap > aap THEN ap
+                            ELSE aap
+                          END + dp) AS avg_gs
                     FROM profiles
                     WHERE user_id IN ({placeholders})
                 ''', guild_members)
@@ -155,7 +193,11 @@ class Recruit(commands.Cog):
                 placeholders = ','.join('?' * len(member_ids))
 
                 c.execute(f'''
-                    SELECT AVG((ap+aap) / 2 + dp) as avg_gs
+                    SELECT AVG(
+                          CASE
+                            WHEN ap > aap THEN ap
+                            ELSE aap
+                          END + dp) AS avg_gs
                     FROM profiles
                     WHERE user_id IN ({placeholders}) AND main_class = ?
                 ''', member_ids + [class_name])
@@ -223,7 +265,7 @@ class Recruit(commands.Cog):
 
         async def approve_callback(self, interaction: discord.Interaction):
             try:
-                role = interaction.guild.get_role(1392610552794189866)  # Replace with your role ID
+                role = interaction.guild.get_role(1392610552794189866)
                 member = interaction.guild.get_member(self.target_user.id)
                 if role and member:
                     await member.add_roles(role, reason="Registro aprovado")
@@ -267,7 +309,7 @@ class Recruit(commands.Cog):
 
     @app_commands.command(name="registro", description="Registra seu perfil")
     @app_commands.guild_only()
-    @app_commands.checks.has_role(1392610552794189866)  # Replace with your role ID
+    @app_commands.checks.has_role(1392610552794189866)
     @app_commands.describe(
         nome_familia="Nome de Família",
         nome_personagem="Nome do Personagem",
@@ -287,13 +329,13 @@ class Recruit(commands.Cog):
                       gear_link: str):
         try:
             await interaction.response.defer(ephemeral=True)
-
+            avatar_url = interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url
             log_embed = discord.Embed(
             title="**Comando Executado**",
             description=f"**Comando:** */registro*\n**Hora:** {datetime.now().strftime('%d/%m/%Y | %H:%M')}",
             color=0xFFFFFF
             )
-            log_embed.set_footer(text=f"Executado por {interaction.user.display_name}", icon_url=interaction.user.avatar.url)
+            log_embed.set_footer(text=f"Executado por {interaction.user.display_name}", icon_url=avatar_url)
 
             log_channel = interaction.guild.get_channel(1318401148151009391)
             await log_channel.send(embed=log_embed)
@@ -363,9 +405,9 @@ class Recruit(commands.Cog):
                 color=0xFFFFFF,
                 timestamp=datetime.now()
             )
-
-            embed_log.set_thumbnail(url=interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url)
-            log_channel = self.bot.get_channel(1318400984531210281)  # Replace with your log channel ID
+            
+            embed_log.set_thumbnail(url=avatar_url)
+            log_channel = self.bot.get_channel(1318400984531210281)
             if log_channel:
                 await log_channel.send(embed=embed_log)
 
@@ -404,7 +446,7 @@ class Recruit(commands.Cog):
 
     @app_commands.command(name="atualizar", description="Atualiza seu perfil")
     @app_commands.guild_only()
-    @app_commands.checks.has_role(1395196503261446146)  # Replace with your role ID
+    @app_commands.checks.has_role(1395196503261446146)
     @app_commands.describe(
         nome_familia="Nome de Família",
         nome_personagem="Nome do Personagem",
@@ -552,9 +594,12 @@ class Recruit(commands.Cog):
             role_guilda = await self.get_guildas(interaction.user)
             role_raid = await self.get_raids(interaction.user)
 
-            aps = data[4] + data[5]  # AP + AAP
-            ap2 = aps / 2  # AP + AAP * 2
-            gs = int(ap2 + data[6])  # APS + DP
+        #    aps = data[4] + data[5]  # AP + AAP
+        #    ap2 = aps / 2  # AP + AAP * 2
+        #    gs = int(ap2 + data[6])  # APS + DP
+
+            max_ap = max(data[4], data[5])
+            gs = int(max_ap + data[6])  # Max(AP, AAP) + DP
 
             embed = discord.Embed(
                 title=f"{interaction.user.display_name}",
@@ -575,28 +620,33 @@ class Recruit(commands.Cog):
 
             embed.add_field(
                 name="📊Média (Lollipop)",
-                value="Acima ✅" if user_gs >= (lollipop_avg or 0) else "Abaixo ⚠️",
+                value="Média 🆗" if abs(user_gs - (lollipop_avg or 0)) <= 6 else "Acima ✅" if user_gs > (lollipop_avg or 0) else "Abaixo ⚠️",
                 inline=True
             )
 
-            if guild_avg:
-                guild_name = next(name for id, name in self.guildas.items()
-                                if id in [r.id for r in interaction.user.roles])
-                embed.add_field(
-                    name=f"📊Média ({guild_name})",
-                    value="Acima ✅" if user_gs >= guild_avg else "Abaixo ⚠️",
-                    inline=True
-                )
-            else:
-                embed.add_field(name="📊Média (Guilda)", value="Sem guilda⚠️", inline=True                
-                )
+        #    if guild_avg:
+        #        guild_name = next(name for id, name in self.guildas.items()
+        #                        if id in [r.id for r in interaction.user.roles])
+        #        embed.add_field(
+        #            name=f"📊Média ({guild_name})",
+        #            value="Acima ✅" if user_gs >= guild_avg else "Abaixo ⚠️",
+        #            inline=True
+        #        )
+        #    else:
+        #        embed.add_field(name="📊Média (Guilda)", value="Sem guilda⚠️", inline=True                
+        #        )           
 
             embed.add_field(
                 name=f"📊Média ({data[3]})",
-                value="Acima ✅" if class_avg and gs >= class_avg else "Abaixo ⚠️",
+                value="Média 🆗" if class_avg and abs(gs - class_avg) <= 6 else "Acima ✅" if class_avg and gs > class_avg else "Abaixo ⚠️",
                 inline=True
             )
 
+            ranking_position = await self.get_gs_ranking(interaction.user.id)
+            if ranking_position:
+                embed.add_field(name="🥇Posição GS", value=f"{ranking_position}º", inline=True)
+            else:
+                embed.add_field(name="🥇Posição GS", value="Sem posição⚠️", inline=True)
 
             #embed.add_field(name="📎Link Gear", value=(data[9] if data[9] else "⚠️Nenhum link"), inline=True)
             embed.add_field(name="📎Link Gear", value=f"[Clique aqui]({data[8]})" if data[8] and data[8].strip() else "Nenhum link", inline=True)
@@ -616,13 +666,12 @@ class Recruit(commands.Cog):
 
                 await interaction.followup.send(embed=lollipop_gs_baixo_embed, ephemeral=True)
 
-            if guild_avg is not None and user_gs < guild_avg:
-                guild_gs_baixo_embed = discord.Embed(
-                    title="⚠️ Atenção!",
-                    description=f"Seu Gearscore ({user_gs}) está abaixo da média da {guild_name}.\n"
-                )
-
-                await interaction.followup.send(embed=guild_gs_baixo_embed, ephemeral=True)
+            #if guild_avg is not None and user_gs < guild_avg:
+            #    guild_gs_baixo_embed = discord.Embed(
+            #        title="⚠️ Atenção!",
+            #        description=f"Seu Gearscore ({user_gs}) está abaixo da média da {guild_name}.\n"
+            #    )
+            #    await interaction.followup.send(embed=guild_gs_baixo_embed, ephemeral=True)
 
             if user_gs < class_avg:
                 class_gs_baixo_embed = discord.Embed(
@@ -643,7 +692,6 @@ class Recruit(commands.Cog):
             self.bot = bot
             self.target_user = target_user
             
-            # Create raid selection menu
             select = Select(
                 placeholder="Trocar Raid",
                 options=[
@@ -656,18 +704,15 @@ class Recruit(commands.Cog):
 
         async def raid_callback(self, interaction: discord.Interaction):
             try:
-                # Get the selected raid role ID
                 new_role_id = int(interaction.data['values'][0])
                 guild = interaction.guild
                 member = guild.get_member(self.target_user.id)
                 
-                # Remove existing raid roles
                 for raid_id in self.bot.get_cog('Recruit').raids.keys():
                     role = guild.get_role(raid_id)
                     if role and role in member.roles:
                         await member.remove_roles(role)
                 
-                # Add new raid role
                 new_role = guild.get_role(new_role_id)
                 if new_role:
                     await member.add_roles(new_role)
@@ -683,7 +728,6 @@ class Recruit(commands.Cog):
             self.bot = bot
             self.target_user = target_user
         
-            # Create guild selection menu
             select = Select(
                 placeholder="Trocar Guilda",
                 options=[
@@ -696,18 +740,15 @@ class Recruit(commands.Cog):
 
         async def guild_callback(self, interaction: discord.Interaction):
             try:
-                # Get the selected guild role ID
                 new_role_id = int(interaction.data['values'][0])
                 guild = interaction.guild
                 member = guild.get_member(self.target_user.id)
 
-               # Remove existing guild roles
                 for guild_id in self.bot.get_cog('Recruit').guildas.keys():
                     role = guild.get_role(guild_id)
                     if role and role in member.roles:
                         await member.remove_roles(role)
             
-                # Add new guild role
                 new_role = guild.get_role(new_role_id)
                 if new_role:
                     await member.add_roles(new_role)
@@ -730,7 +771,7 @@ class Recruit(commands.Cog):
     @app_commands.command(name="pre", description="Mostra o perfil de outro usuário")
     @app_commands.describe(user="Usuário para verificar o perfil")
     @app_commands.guild_only()
-    @app_commands.checks.has_role(1361472124199637102)
+    @app_commands.checks.has_role(1325386396214628454)
     async def pre(self, interaction: discord.Interaction, user: discord.User):
         try:
             await interaction.response.defer(ephemeral=True)
@@ -758,12 +799,21 @@ class Recruit(commands.Cog):
                 return
             
 
+            lollipop_avg = await self.get_lollipop_average()
+            guild_avg = await self.get_guild_average(user)
+            class_avg = await self.get_class_average(data[3])
+
+            user_gs = int(((data[4] + data[5]) / 2) + data[6])
+
             role_guilda = await self.get_guildas(user)
             role_raid = await self.get_raids(user)
 
-            aps = data[4] + data[5]  # AP + AAP
-            ap2 = aps / 2  # AP + AAP * 2
-            gs = int(ap2 + data[6])  # APS + DP
+        #    aps = data[4] + data[5]  # AP + AAP
+        #    ap2 = aps / 2  # AP + AAP * 2
+        #    gs = int(ap2 + data[6])  # APS + DP
+
+            max_ap = max(data[4], data[5])
+            gs = int(max_ap + data[6])  # Max(AP, AAP) + DP
 
             embed = discord.Embed(
                 title=f"Perfil de {user.display_name}",
@@ -781,6 +831,37 @@ class Recruit(commands.Cog):
             embed.add_field(name="⚔️AP Awakening", value=data[5], inline=True)
             embed.add_field(name="🛡️DP", value=data[6], inline=True)
             embed.add_field(name="🏆Gearscore", value=f"{gs}", inline=True)
+
+            embed.add_field(
+                name="📊Média (Lollipop)",
+                value="Média 🆗" if abs(user_gs - (lollipop_avg or 0)) <= 6 else "Acima ✅" if user_gs > (lollipop_avg or 0) else "Abaixo ⚠️",
+                inline=True
+            )
+
+        #    if guild_avg:
+        #        guild_name = next(name for id, name in self.guildas.items()
+        #                        if id in [r.id for r in interaction.user.roles])
+        #        embed.add_field(
+        #            name=f"📊Média ({role_guilda})",
+        #            value="Acima ✅" if user_gs >= guild_avg else "Abaixo ⚠️",
+        #            inline=True
+        #        )
+        #    else:
+        #        embed.add_field(name="📊Média (Guilda)", value="Sem guilda⚠️", inline=True                
+        #        )
+
+            ranking_position = await self.get_gs_ranking(user.id)
+            if ranking_position:
+                embed.add_field(name="🥇Posição GS", value=f"{ranking_position}º", inline=True)
+            else:
+                embed.add_field(name="🥇Posição GS", value="Sem posição⚠️", inline=True)
+
+            embed.add_field(
+                name=f"📊Média ({data[3]})",
+                value="Média 🆗" if class_avg and abs(gs - class_avg) <= 6 else "Acima ✅" if class_avg and gs > class_avg else "Abaixo ⚠️",
+                inline=True
+            )
+
             #embed.add_field(name="📎Link Gear", value=(data[9] if data[9] else "⚠️Nenhum link"), inline=True)
             embed.add_field(name="📎Link Gear", value=f"[Clique aqui]({data[8]})" if data[8] and data[8].strip() else "Nenhum link", inline=True)
             embed.add_field(name="\u200b", value="\u200b", inline=True)
@@ -817,7 +898,7 @@ class Recruit(commands.Cog):
     @app_commands.command(name="recrutar", description="Recruta um usuário para a guilda")
     @app_commands.describe(user="Usuário para recrutar", guilda="Guilda para recrutar o usuário")
     @app_commands.guild_only()
-    @app_commands.checks.has_role(1326000068448489502) # Officer
+    @app_commands.checks.has_role(1326000068448489502)
     @app_commands.choices(guilda=[
         app_commands.Choice(name="Allyance", value="allyance"),
         app_commands.Choice(name="Grand Order", value="grand_order"),
@@ -843,7 +924,7 @@ class Recruit(commands.Cog):
                 "Por favor, use o comando /registro para iniciar" \
                 "seu registro."
             )
-            await user.send(file=discord.File("C:/Users/rf/Pictures/exemplo_perfil.png"))  # Optional image
+        #    await user.send(file=discord.File("C:/Users/rf/Pictures/exemplo_perfil.png"))  # Optional image
             await interaction.followup.send(f"Recrutamento enviado para {user.display_name}.", ephemeral=True)
 
             if guilda.value == "allyance":
@@ -871,6 +952,116 @@ class Recruit(commands.Cog):
         except Exception as e:
             print(f"Error in recrutar: {e}")
             await interaction.followup.send("Erro ao enviar recrutamento.", ephemeral=True)
+
+    @app_commands.command(name="registrar", description="Registra um usuário manualmente")
+    @app_commands.guild_only()
+    @app_commands.checks.has_role(1326000068448489502) # Officer
+    @app_commands.describe(
+        user="Usuário para registrar",
+        nome_familia="Nome de Família",
+        nome_personagem="Nome do Personagem",
+        classe_pvp="Classe PvP",
+        ap="Poder de ataque com gear pvp",
+        aap="Poder de ataque awakening com gear pvp",
+        dp="Poder de defesa",
+        gear_link="Link do Gear"
+    )
+    async def registrar(self, interaction: discord.Interaction,
+                        user: discord.User,
+                        nome_familia: str,
+                        nome_personagem: str,
+                        classe_pvp: str,
+                        ap: int,
+                        aap: int,
+                        dp: int,
+                        gear_link: str
+                        ):
+        try:
+            await interaction.response.defer(ephemeral=True)
+            avatar_url = interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url
+
+            log_embed = discord.Embed(
+            title="**Comando Executado**",
+            description=f"**Comando:** */registrar*\n**Hora:** {datetime.now().strftime('%d/%m/%Y | %H:%M')}",
+            color=0xFFFFFF
+            )
+            log_embed.set_footer(text=f"Executado por {interaction.user.display_name}", icon_url=avatar_url)
+
+            log_channel = interaction.guild.get_channel(1318401148151009391)
+            await log_channel.send(embed=log_embed)
+
+            nome_familia = self.preserve_caps(nome_familia)
+            nome_personagem = self.preserve_caps(nome_personagem)
+
+            classe_pvp = classe_pvp.title()
+
+            if classe_pvp not in class_mapping:
+                invalido_embed = discord.Embed(
+                    title="Classe Principal Inválida",
+                    description=f"**Classe principal inválida. Classes disponíveis:**\n{', '.join(sorted(set(class_mapping.values())))}",
+                    color=0xFF0000
+                )
+                await interaction.followup.send(embed=invalido_embed, ephemeral=True)
+                return
+            
+            main_class = class_mapping[classe_pvp]
+
+            with sqlite3.connect('profiles.db') as conn:
+                c = conn.cursor()
+                c.execute('''
+                          INSERT OR REPLACE INTO profiles
+                          (user_id, family_name, character_name, main_class,
+                           ap, aap, dp, created_at, gear_link, last_updated)
+                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                          ''', (
+                            user.id,
+                            nome_familia,
+                            nome_personagem,
+                            main_class,
+                            ap,
+                            aap,
+                            dp,
+                            datetime.now(),
+                            gear_link if gear_link else None,
+                            datetime.now()
+                        ))
+                conn.commit()
+                
+            try:
+                role = interaction.guild.get_role(1361472124199637102)  # Member role ID
+                lollipop = interaction.guild.get_role(1392610552794189866)  # Lollipop role ID
+                agrole = interaction.guild.get_role(1395196503261446146)  # Aguardando registro role ID
+                if role:
+                    await user.add_roles(role, reason="Registro manual realizado por staff")
+                    await user.add_roles(lollipop, reason="Registro manual realizado por staff")
+                    await user.remove_roles(agrole, reason="Registro manual realizado por staff")
+                    print(f"{datetime.now()}: Cargo {role.name} adicionado a {user.display_name}")
+            except Exception as e:
+                print(f"Erro ao adicionaro cargo com registrar: {e}")
+
+            embed = discord.Embed(
+                title="✅ Registro Manual Concluído",
+                description=f"O perfil de {user.mention} foi registrado com sucesso!\nUtilize /pre para visualizar o perfil.",
+                color=0x00FF00
+            )
+            await interaction.followup.send(embed=embed, ephemeral=True)
+
+            embed_log = discord.Embed(
+                title="**Perfil Registrado Manualmente**",
+                description=f"**Usuário:** {user.mention}\n**Família:** {nome_familia}\n**Personagem:** {nome_personagem}\n**AP:** {ap}\n**AAP:** {aap}\n**DP:** {dp}",
+                color=0xFFFFFF,
+                timestamp=datetime.now()
+            )
+
+            embed_log.set_thumbnail(url=user.avatar.url if user.avatar else user.default_avatar.url)
+            log_channel = self.bot.get_channel(1318400984531210281)  # Your log channel ID
+            if log_channel:
+                await log_channel.send(embed=embed_log)
+            print(f"{datetime.now()}: Perfil de {user.display_name} registrado manualmente com sucesso.")
+
+        except Exception as e:
+            print(f"Error in registrar: {e}")
+            await interaction.followup.send("Erro ao registrar perfil.", ephemeral=True)
 
 
 async def setup(bot):

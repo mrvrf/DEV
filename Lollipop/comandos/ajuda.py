@@ -49,7 +49,6 @@ class Ajuda(commands.Cog):
         embed5.add_field(name="Uso", value="/setsiege (territorio) (servidor) (cap) (role)", inline=False)
         embed5.add_field(name="Exemplo", value="/setsiege territorio: **(Valencia)** servidor: **(Valencia)** cap: **(Descapado)** role: **(Siege)**", inline=False)
 
-        # Send multiple embeds in a single message
         await interaction.response.send_message(embeds=[embed1, embed2, embed3, embed4, embed5], ephemeral=True)
         print(f"Ajuda enviada para {interaction.user.display_name}")
 

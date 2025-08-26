@@ -53,7 +53,6 @@ class Node(commands.Cog):
         app_commands.Choice(name="Mediah/Valencia", value="Mediah/Valencia")
     ])
     async def setnode(self, interaction: discord.Interaction, territorio: app_commands.Choice[str], servidores: str, quantidade: str, cap: app_commands.Choice[str], cargo: discord.Role):
-        # Create the embed
 
         log_embed = discord.Embed(
             title=f"**Comando Executado**",
@@ -79,23 +78,18 @@ class Node(commands.Cog):
         embed.add_field(name=f"**{cap.value}**", value=f"", inline=False) 
         embed.add_field(name="", value="** * Entre TS 20:40h \n* lollipop.ts3guild.com.br \n* Senha: femboy**", inline=False)
         
-        # Store the embed for later use
         self.last_embed = embed
 
-        # Update bot activity
         await self.bot.change_presence(activity=discord.Game(name=f"Nodewar {territorio.name}"))
         print(f"Nodewar {territorio.name} iniciada")
 
-        # Send the embed to the channel (ephemeral, only visible to the user)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
         successful_members = []
         failed_members = []
 
-        # Send private messages to all members with the specified role
         for idx, member in enumerate(cargo.members):
             if not member.bot:
-                # Update the footer to include the recipient's information
                 current_time = datetime.now().strftime("%H:%M")
                 if member.avatar:
                     embed.set_footer(text=f"Recebido por {member.display_name} às {current_time}", icon_url=member.avatar.url)
@@ -107,7 +101,6 @@ class Node(commands.Cog):
                     successful_members.append(member.display_name)
                     print(f'(Node) mensagem enviada para {member.display_name} - {member.name}')
                     
-                    # Show progress every 10 successful members
                     if len(successful_members) % 10 == 0:
                         log_embed = discord.Embed(
                             title="**Atualização da Node**",
@@ -124,7 +117,6 @@ class Node(commands.Cog):
 
                 await asyncio.sleep(3.5)                
 
-        # Show final progress if there are remaining successful members
         if len(successful_members) % 10 != 0 and successful_members:
             log_embed = discord.Embed(
                 title="**Atualização da Node**", 
@@ -137,7 +129,6 @@ class Node(commands.Cog):
             log_embed.set_footer(text=f"{datetime.now().strftime('%d/%m/%Y | %H:%M')}")
             await log_channel.send(embed=log_embed)
 
-        # Single final embed with all statistics
         final_embed = discord.Embed(
             title=f"**Resultado Node - {territorio.value}**",
             description=f"Total de membros processados: {len(successful_members) + len(failed_members)}",
@@ -172,15 +163,12 @@ class Node(commands.Cog):
     @app_commands.command(name="node", description="Ultima node registrada")
     @cargo_server(server_id=929343217915297812, role_id=929480758328975381)
     async def node(self, interaction: discord.Interaction):
-        # Check if there is a stored embed
         if self.last_embed:
-            # Clone the last embed to modify the footer without affecting stored embed
             new_embed = self.last_embed.copy()
             current_time = datetime.now().strftime("%H:%M")
             new_embed.set_footer(text=f"Visualizado por {interaction.user.display_name} às {current_time}", icon_url=interaction.user.avatar.url)
             await interaction.response.send_message(embed=new_embed, ephemeral=False)
             
-            # Log the command execution
             log_embed = discord.Embed(
                 title=f"**Comando Executado**",
                 description=f"**Comando:** */node*\n**Hora:** {datetime.now().strftime('%d/%m/%Y | %H:%M')}",
@@ -195,12 +183,9 @@ class Node(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Node(bot))
-    
-    # Set default permissions for /setnode command
-    guild_id = 929343217915297812  # Replace with your guild/server ID
+    guild_id = 929343217915297812
     guild = discord.Object(id=guild_id)
 
-    # Properly access the command from the cog
     command = bot.tree.get_command("setnode", guild=guild)
     if command:
         command.default_permissions = discord.Permissions(administrator=True)

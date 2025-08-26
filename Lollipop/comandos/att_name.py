@@ -6,7 +6,7 @@ from datetime import datetime
 class AttName(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.role_id = 1395196503261446146  # Replace with your role ID
+        self.role_id = 1395196503261446146 
         self.update_names.start()
 
     def cog_unload(self):
@@ -15,14 +15,14 @@ class AttName(commands.Cog):
     @tasks.loop(hours=1)
     async def update_names(self):
         try:
-            guild = self.bot.get_guild(929343217915297812)  # Replace with your guild ID
+            guild = self.bot.get_guild(929343217915297812)  # lppy
             if not guild:
-                print(f"{datetime.now()}: Guild not found")
+                print(f"{datetime.now()}: servidor nao encontrado")
                 return
 
             role = guild.get_role(self.role_id)
             if not role:
-                print(f"{datetime.now()}: Role not found")
+                print(f"{datetime.now()}: cargo nao encontrado")
                 return
 
             with sqlite3.connect('profiles.db') as conn:
@@ -38,14 +38,14 @@ class AttName(commands.Cog):
                         new_nick = f"🍭 {data[0]}"
                         try:
                             await member.edit(nick=new_nick)
-                            print(f"{datetime.now()}: Updated {member.name} to {new_nick}")
+                            #print(f"{datetime.now()}: Atualizado {member.name} para {new_nick}")
                         except discord.Forbidden:
-                            print(f"{datetime.now()}: Cannot change nickname for {member.name}")
+                            print(f"{datetime.now()}: erro ao trocar o nome de {member.name}")
                         except Exception as e:
-                            print(f"{datetime.now()}: Error changing nickname for {member.name}: {e}")
+                            print(f"{datetime.now()}: erro ao trocar o nome de {member.name}: {e}")
 
         except Exception as e:
-            print(f"{datetime.now()}: Error in update_names: {e}")
+            print(f"{datetime.now()}: erro em attname: {e}")
 
     @update_names.before_loop
     async def before_update_names(self):

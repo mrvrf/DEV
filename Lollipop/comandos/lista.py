@@ -33,7 +33,6 @@ class Lista(commands.Cog):
 
         members.sort(key=lambda member: member.display_name)
 
-        # Create a list of member names with mute/deaf status
         member_info = []
         for idx, member in enumerate(members, start=1):
             if not member.bot:
@@ -43,7 +42,6 @@ class Lista(commands.Cog):
 
         current_time = datetime.now().strftime("%d_%m_%Y - %H_%M")
 
-        # Create a .txt file with the member names and their mute/deaf status
         file_name = f'lista {current_time}.txt'
         with open(file_name, 'w', encoding='utf-8') as file:
             file.write(f"Lista: {nome_lista}\n")
@@ -52,7 +50,6 @@ class Lista(commands.Cog):
             for info in member_info:
                 file.write(f"{info}\n")
 
-        # Send the .txt file to a specific channel
         specific_channel_id = 1323553766087327817
         specific_channel = self.bot.get_channel(specific_channel_id)
         if specific_channel:

@@ -31,8 +31,8 @@ class PresenceStatus(commands.Cog):
                     await channel.send(f"({prefix}) **{after.display_name} {status_message}** - {datetime.now().strftime('%d/%m/%Y | %H:%M')}")
 
 async def setup(bot: commands.Bot):
-    channel_id = 1335865355553345596  # Replace with your channel ID
-    role_al = 929344073221935104  # Replace with your role ID for allyance
-    role_go = 935733958266716200  # Replace with your role ID for grand_order
-    role_mn = 1206381250064158740  # Replace with your role ID for manifest
+    channel_id = 1335865355553345596
+    role_al = 929344073221935104
+    role_go = 935733958266716200
+    role_mn = 1206381250064158740
     await bot.add_cog(PresenceStatus(bot, role_al, role_go, role_mn, channel_id))

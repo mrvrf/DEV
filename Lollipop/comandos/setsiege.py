@@ -34,7 +34,7 @@ class Siege(commands.Cog):
         command_log_embed.set_footer(text=f"Executado por {interaction.user.display_name}", icon_url=interaction.user.avatar.url)
         print(f"Siege {territorio.value} iniciada por {interaction.user.display_name}")
 
-        log_channel = self.bot.get_channel(1318401148151009391)  # Use your log channel ID
+        log_channel = self.bot.get_channel(1318401148151009391)
         await log_channel.send(embed=command_log_embed)
 
         war_room_log = interaction.guild.get_channel(1126288833655349308)
@@ -50,25 +50,18 @@ class Siege(commands.Cog):
         embed.add_field(name="Quantidade", value=f"**100** players", inline=False)
         embed.add_field(name=f"**{cap.value}**", value=f"", inline=False)
         embed.add_field(name="", value="** * Entre TS 20:40h \n* lollipop.ts3guild.com.br \n* Senha: femboy**", inline=False)
-        
-        # Store the embed for later use
+
         self.last_embed = embed
 
-        # Update bot activity
         await self.bot.change_presence(activity=discord.Game(name=f"Siege {territorio.value}"))
         print (f"Siege {territorio.value} iniciada")
-
-        # Send the embed to the channel (ephemeral, only visible to the user)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
-        # Initialize lists for tracking members
         successful_members = []
         failed_members = []
 
-        # Send private messages to all members with the specified role
         for idx, member in enumerate(role.members):
             if not member.bot:
-                # Update the footer to include the recipient's information
                 current_time = datetime.now().strftime("%H:%M")
                 if member.avatar:
                     embed.set_footer(text=f"Recebido por {member.display_name} às {current_time}", icon_url=member.avatar.url)
@@ -137,9 +130,7 @@ class Siege(commands.Cog):
                 
     @app_commands.command(name="siege", description="Última siege registrada")
     async def siege(self, interaction: discord.Interaction):
-        # Check if there is a stored embed
         if self.last_embed:
-            # Clone the last embed to modify the footer without affecting stored embed
             new_embed = self.last_embed.copy()
             current_time = datetime.now().strftime("%H:%M")
             new_embed.set_footer(text=f"Visualizado por {interaction.user.display_name} às {current_time}", icon_url=interaction.user.avatar.url)
@@ -152,7 +143,7 @@ class Siege(commands.Cog):
             )
             log_embed.set_footer(text=f"Executado por {interaction.user.display_name}", icon_url=interaction.user.avatar.url)
             
-            log_channel = self.bot.get_channel(1318401148151009391)  # Use your log channel ID
+            log_channel = self.bot.get_channel(1318401148151009391)
             await log_channel.send(embed=log_embed)
         else:
             await interaction.response.send_message("Nenhuma siege registrada ainda.", ephemeral=True)

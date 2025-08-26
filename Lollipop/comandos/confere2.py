@@ -13,7 +13,6 @@ class Ccconfere(commands.Cog):
     @app_commands.describe(mensagem="Mensagem a ser enviada", membros="Membros liberados")
     @app_commands.checks.has_role(1325386396214628454)
     async def confere(self, interaction: discord.Interaction, mensagem: str, membros: str):
-        # Cria embed para logar o uso do comando
         log_embed = discord.Embed(
             title="**Comando Executado**",
             description=f"**Comando:** */confere*\n**Hora:** {datetime.now().strftime('%d/%m/%Y | %H:%M')}",
@@ -22,14 +21,13 @@ class Ccconfere(commands.Cog):
         log_embed.set_footer(text=f"Executado por {interaction.user.display_name}", icon_url=interaction.user.avatar.url)
         print(f"Confere iniciado por {interaction.user.display_name}")
 
-        # Envia o log para um canal específico
         log_channel = interaction.guild.get_channel(1318401148151009391)
         await log_channel.send(embed=log_embed)
 
         confere = interaction.guild.get_channel(1119767862383476797)
         await confere.send(f":white_check_mark: **Confere** iniciado por {interaction.user.mention}")
 
-        current_time = datetime.now().strftime("%H:%M")
+    #    current_time = datetime.now().strftime("%H:%M")
         mention_ids = [int(user_id.strip('<@!>')) for user_id in membros.split() if user_id.startswith('<@') and user_id.endswith('>')]
 
         if not mention_ids:
@@ -142,9 +140,8 @@ class Ccconfere(commands.Cog):
 
         successful_members.sort()
         failed_members.sort()
-        disapproved_members.sort()  # Sort disapproved list
+        disapproved_members.sort()
 
-        # Cria embed com o resumo do envio das mensagens
         embed = discord.Embed(
             title="**Resultado do Confere**",
             description=f"**Confere enviado por:** {interaction.user.display_name}",
@@ -154,7 +151,7 @@ class Ccconfere(commands.Cog):
             embed.add_field(name="Membros liberados :white_check_mark:", value="\n".join(successful_members), inline=False)
         if failed_members:
             embed.add_field(name="Membros NÃO liberados :x:", value="\n".join(failed_members), inline=False)
-        if disapproved_members:  # New field for disapproved members
+        if disapproved_members: 
             embed.add_field(name="Membros desaprovados :x:", value="\n".join(disapproved_members), inline=False)
         embed.add_field(name=f"Total de membros liberados: ({len(successful_members)})", value="", inline=False)
         embed.set_footer(text=f"{datetime.now().strftime('%d/%m/%Y | %H:%M')}")
@@ -162,10 +159,8 @@ class Ccconfere(commands.Cog):
 
         await interaction.followup.send(f":white_check_mark: **Confere** finalizado!", ephemeral=True)
 
-        # Envia a resposta do comando
         await interaction.followup.send(embed=embed, ephemeral=True)
 
-        # Envia o resumo do envio das mensagens para um canal específico
         summary_channel = interaction.guild.get_channel(1119767862383476797)
         await summary_channel.send(embed=embed)
 
@@ -180,7 +175,6 @@ async def setup(bot):
     cog = Ccconfere(bot)
     await bot.add_cog(cog)
 
-    # Define permissões padrão para comandos
     command = bot.tree.get_command("confere")
     if command:
         command.default_permissions = discord.Permissions(administrator=True)

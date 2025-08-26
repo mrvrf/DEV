@@ -6,9 +6,9 @@ import asyncio
 class Alert(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.alert_time = "19:50"  # Specify the time in HH:MM format
+        self.alert_time = "19:50" 
         self.labs = "22:00"
-        self.channel_id = 1119767862383476797  # Replace with your channel ID
+        self.channel_id = 1119767862383476797
         self.message = "Aguardando confere. \nUtilize **/confere** para liberar o participar.\nhttps://discord.com/channels/929343217915297812/1119767862383476797"  # Specify the alert message
         self.labs_message = "**MANDA LABS AI PAIZAO** \nLABS DO **CAPADO** https://discord.com/channels/929343217915297812/1167607962542547054\nLABS DO **DESCAPADO** https://discord.com/channels/929343217915297812/1330036510493507584"
         self.check_time.start()
@@ -44,7 +44,6 @@ class Alert(commands.Cog):
         alert_time = datetime.strptime(self.alert_time, "%H:%M").time()
         labs = datetime.strptime(self.labs, "%H:%M").time()
 
-        # Check if the current time matches the alert time
         if now.time().hour == alert_time.hour and now.time().minute == alert_time.minute:
             channel = self.bot.get_channel(self.channel_id)
             print(f"Aguardando confere; Current time: {now.time()}, Alert time: {alert_time}")
@@ -64,7 +63,7 @@ class Alert(commands.Cog):
                 await user8.send(embed=embed)
                 #await channel.send(f"<@216766180633870338> <@1172598336960868402> <@942762192728629260> <@253711374235074560>")
                 #await channel.send(embed=embed)
-                await asyncio.sleep(120)  # Wait a minute to avoid sending multiple alerts
+                await asyncio.sleep(120)  # cd 2min
 
         if now.time().hour == labs.hour and now.time().minute == labs.minute:
             print(f"Aguardando labs; Current time: {now.time()}, Alert time: {labs}")

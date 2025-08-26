@@ -14,7 +14,7 @@ class LinkModal(Modal):
         super().__init__(title="Cobrança - Tendão", timeout=1200)
         self.channel_id = channel_id
         self.guild_id = guild_id
-        self.cog = cog  # Store reference to cog
+        self.cog = cog
 
         self.link = TextInput(
             label="Link",
@@ -39,7 +39,6 @@ class LinkModal(Modal):
         try:
             await interaction.response.defer(ephemeral=True)
             
-            # Update database with user's response
             await self.cog.update_user_response(interaction.user.id, self.link.value)
             
             guild = interaction.client.get_guild(self.guild_id)
@@ -59,14 +58,14 @@ class LinkModal(Modal):
                 timestamp=datetime.now()
             )
             embed.add_field(name="Link", value=f"{self.link.value}", inline=True)
-            embed.set_image(url=self.link.value)  # Assuming the link is an image URL
+            embed.set_image(url=self.link.value) 
             embed.set_footer(
                 text=f"Respondido por {interaction.user.display_name}",
                 icon_url=interaction.user.avatar.url if interaction.user.avatar else None
             )
             
             await channel.send(embed=embed)
-            self.cog.submitted_users.add(interaction.user.id)  # Track submission
+            self.cog.submitted_users.add(interaction.user.id) 
             await interaction.followup.send("Link enviado com sucesso!", ephemeral=True)
             
         except Exception as e:
@@ -201,7 +200,7 @@ class VODReviewCommand(commands.Cog):
                         await member.send(":saluting_face:", view=view)
                         successful_dms.append(member.display_name)
                         print(f"Sent DM to {member.display_name}")
-                        await asyncio.sleep(2)  # Prevent rate limiting
+                        await asyncio.sleep(2)
                     except discord.Forbidden:
                         failed_dms.append(member.display_name)
                         print(f"Failed to send DM to {member.display_name}")
@@ -214,7 +213,7 @@ class VODReviewCommand(commands.Cog):
                     f"Progresso: {len(successful_dms)}/{len(members_list)} mensagens enviadas...", 
                     ephemeral=True
                 )
-                await asyncio.sleep(1)  # Prevent rate limiting
+                await asyncio.sleep(1)
 
             # Send final summary
             summary = f"Cobrança enviada para {len(successful_dms)} membros do cargo {role.mention}\n"
@@ -234,20 +233,18 @@ class VODReviewCommand(commands.Cog):
     async def show_cobrancas(self, interaction: discord.Interaction):
         try:
             await interaction.response.defer(ephemeral=True)
-            print("Processing /cobrancas command...")  # Debug log
+            print("Processing /cobrancas command...")
             
             if not os.path.exists(self.cobrancas_dir):
-                print(f"Directory not found: {self.cobrancas_dir}")  # Debug log
+                print(f"Directory not found: {self.cobrancas_dir}")
                 await interaction.followup.send("Não há cobranças registradas.", ephemeral=True)
                 return
             
             files = os.listdir(self.cobrancas_dir)
             if not files:
-                print("No files found in directory")  # Debug log
+                print("No files found in directory") 
                 await interaction.followup.send("Não há cobranças registradas.", ephemeral=True)
                 return
-            
-            # Sort files by creation date
             files.sort(key=lambda x: os.path.getctime(os.path.join(self.cobrancas_dir, x)), reverse=True)
             
             embed = discord.Embed(
@@ -256,10 +253,10 @@ class VODReviewCommand(commands.Cog):
                 timestamp=datetime.now()
             )
             
-            for file in files[:10]:  # Limit to 10 most recent
+            for file in files[:10]:  
                 try:
                     filepath = os.path.join(self.cobrancas_dir, file)
-                    print(f"Processing file: {filepath}")  # Debug log
+                    print(f"Processing file: {filepath}") 
                     
                     with open(filepath, 'r', encoding='utf-8') as f:
                         data = json.load(f)
@@ -273,18 +270,18 @@ class VODReviewCommand(commands.Cog):
                             inline=False
                         )
                 except Exception as e:
-                    print(f"Error processing file {file}: {e}")  # Debug log
+                    print(f"Error processing file {file}: {e}") 
                     continue
             
             await interaction.followup.send(embed=embed, ephemeral=True)
-            print("Command completed successfully")  # Debug log
+            print("Command completed successfully")  
             
         except Exception as e:
-            print(f"Error in show_cobrancas: {e}")  # Debug log
+            print(f"Error in show_cobrancas: {e}")  
             try:
                 await interaction.followup.send("Erro ao mostrar cobranças.", ephemeral=True)
             except:
-                print("Failed to send error message")  # Debug log
+                print("Failed to send error message")  
 
     @app_commands.command(name="cobranca", description="Mostra detalhes de uma cobrança específica")
     @app_commands.guild_only()

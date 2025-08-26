@@ -24,7 +24,6 @@ class ControlCommand(commands.Cog):
             )
             log_embed.set_footer(text=f"Executado por {interaction.user.display_name}", icon_url=interaction.user.avatar.url)
 
-            # Envia o log para um canal específico
             log_channel = interaction.guild.get_channel(1318401148151009391)
             await log_channel.send(embed=log_embed)
 

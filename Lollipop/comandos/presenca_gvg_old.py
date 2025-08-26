@@ -21,7 +21,7 @@ class PinModal(Modal):
         entered_pin = self.children[0].value
         response = "SIM" if entered_pin == self.pin else "NAO"
         await update_user_response(self.user_id, self.column_name, response)
-        await interaction.response.send_message("Thank you for your response!", ephemeral=True)
+        await interaction.response.send_message("teste", ephemeral=True)
 
 class PresencaCommand(commands.Cog):
     def __init__(self, bot: commands.Bot, role_id: int, guild_id: int):
@@ -86,9 +86,9 @@ class PresencaCommand(commands.Cog):
                     
                     for member in voice_channel_members:
                         try:
-                            await member.send("Please enter the PIN you received:", view=PinModal(str(member.id), nome, pin))
+                            await member.send("Por favor coloque o PIN recebido:", view=PinModal(str(member.id), nome, pin))
                         except Exception as e:
-                            print(f"Error sending PIN to {member.display_name}: {e}")
+                            print(f"Erro ao enviar o PIN para {member.display_name}: {e}")
 
                     await interaction.followup.send("Presença atualizada com sucesso!", ephemeral=True)
                 else:
@@ -128,7 +128,7 @@ class PresencaCommand(commands.Cog):
                 await interaction.response.send_message("Perfil não encontrado.", ephemeral=True)
         except Exception as e:
             print(f"Error in /perfil command: {e}")
-            await interaction.response.send_message("An error occurred while processing the command.", ephemeral=True)
+            await interaction.response.send_message("Erro;.", ephemeral=True)
 
     @app_commands.command(name="pre", description="Checa seu perfil de presença em gvg")
     @app_commands.guild_only()
@@ -162,7 +162,7 @@ class PresencaCommand(commands.Cog):
                 await interaction.followup.send("Perfil não encontrado.", ephemeral=True)
         except Exception as e:
             print(f"Error in /pre command: {e}")
-            await interaction.followup.send("An error occurred while processing the command.", ephemeral=True)
+            await interaction.followup.send("Erro;.", ephemeral=True)
 
     @app_commands.command(name="total", description="Lista dos maiores presentes nas gvgs")
     @app_commands.guild_only()
@@ -222,13 +222,13 @@ class PresencaCommand(commands.Cog):
 
             users_with_sim = await self.get_users_with_sim(column)
             if not users_with_sim:
-                await interaction.followup.send(f"No users found with SIM in column {column}.", ephemeral=True)
+                await interaction.followup.send(f"Nenhum usuario encontrado com SIM {column}.", ephemeral=True)
                 return
 
             description = ""
             for user_id in users_with_sim:
                 member = interaction.guild.get_member(int(user_id))
-                display_name = member.display_name if member else "Unknown User"
+                display_name = member.display_name if member else "Unknown"
                 line = f"{display_name}\n"
                 if len(description) + len(line) > 4000:
                     embed = discord.Embed(title=f"Membros na {column}", description=description, color=0xB4A7D6)
@@ -243,6 +243,6 @@ class PresencaCommand(commands.Cog):
             await interaction.followup.send("An error occurred while processing the command.", ephemeral=True)
 
 async def setup(bot: commands.Bot):
-    role_id = 929480758328975381  # Replace with your role ID
-    guild_id = 929343217915297812  # Replace with your guild ID
+    role_id = 929480758328975381
+    guild_id = 929343217915297812
     await bot.add_cog(PresencaCommand(bot, role_id, guild_id))

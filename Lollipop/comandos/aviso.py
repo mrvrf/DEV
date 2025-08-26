@@ -43,7 +43,7 @@ class Aviso(commands.Cog):
             tipocor = 0xFFFF00
 
 
-        # Log the command usage
+        # log
         current_time = datetime.now().strftime("%d/%m/%Y | %H:%M")
         log_embed = discord.Embed(
             title="**Comando Executado**",
@@ -97,7 +97,6 @@ class Aviso(commands.Cog):
                     successful_members.append(member.display_name)
                     print(f'(Aviso) Mensagem enviada para {member.display_name}')
 
-                    # Remove this block to avoid sending the log multiple times
                     if len(successful_members) % 20 == 0:
                          log_embed = discord.Embed(
                              title="**Atualização do Aviso**",
@@ -149,7 +148,7 @@ class Aviso(commands.Cog):
         if isinstance(error, app_commands.MissingPermissions):
             await interaction.response.send_message(f"Você não tem permissão para usar este comando. Adicione o cargo <@&1325386396214628454> para utilizar este comando.", ephemeral=True)
         else:
-            print(f'Error in aviso command: {error}') 
+            print(f'Erro no comando aviso: {error}') 
 
 async def setup(bot):
     await bot.add_cog(Aviso(bot))
