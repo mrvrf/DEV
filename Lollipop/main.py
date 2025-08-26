@@ -169,7 +169,7 @@ async def globally_block_dms(interaction: discord.Interaction):
     return True
 
 def run_bot():
-    asyncio.run(bot.start("MTMyMTYxMjI5NDUwMDkwOTEwNg.GvkCUI.VTMaT-j95TqEA8zYFHTpyIfhnHtNRVfcVyZ32k"))
+    asyncio.run(bot.start("AAAAAAAAAAAAAAAAAA"))
 
 def create_gui():
     root = tk.Tk()
